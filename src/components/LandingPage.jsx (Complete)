@@ -1,0 +1,18 @@
+import { useState, useEffect } from 'react'
+import { loadStripe } from '@stripe/stripe-js'
+import { Zap, Shield, TrendingUp, Users, DollarSign, Diamond, Medal, Crown } from 'lucide-react'
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || 'pk_test_...')
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+
+const tiers = [
+  {
+    id: 'gold',
+    name: 'GOLD',
+    emoji: '🥇',
+    icon: Medal,
+    price: 199,
+    leads: 100,
+    description: 'For the hungry. Start stacking.',
+   
