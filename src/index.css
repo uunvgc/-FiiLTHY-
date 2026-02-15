@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-fiilthy-black text-white antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+@layer components {
+  .gradient-gold {
+    @apply bg-gradient-to-r from-fiilthy-gold via-white to-fiilthy-gold bg-clip-text text-transparent;
+  }
+  
+  .btn-gold {
+    @apply bg-gradient-to-br from-fiilthy-gold to-fiilthy-crown text-black font-bold uppercase tracking-widest 
+           px-8 py-4 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-fiilthy-gold/30;
+  }
+  
+  .btn-platinum {
+    @apply bg-gradient-to-br from-fiilthy-platinum to-gray-400 text-black font-bold uppercase tracking-widest 
+           px-8 py-4 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-fiilthy-platinum/30;
+  }
+  
+  .btn-crown {
+    @apply bg-gradient-to-br from-fiilthy-crown to-yellow-800 text-white font-bold uppercase tracking-widest 
+           px-8 py-4 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-fiilthy-crown/30;
+  }
+  
+  .card-glass {
+    @apply bg-gradient-to-br from-fiilthy-dark to-fiilthy-darker border border-gray-800 rounded-2xl 
+           backdrop-blur-sm transition-all duration-300 hover:border-fiilthy-gold/50;
+  }
+  
+  .card-popular {
+    @apply bg-gradient-to-br from-fiilthy-dark to-fiilthy-darker border-2 border-fiilthy-platinum rounded-2xl 
+           backdrop-blur-sm transform scale-105 shadow-2xl shadow-fiilthy-platinum/10;
+  }
+  
+  .input-field {
+    @apply bg-fiilthy-dark border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500
+           focus:outline-none focus:border-fiilthy-gold focus:ring-1 focus:ring-fiilthy-gold transition-all;
+  }
+}
+
+@layer utilities {
+  .text-shadow-gold {
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  }
+}
