@@ -1,80 +1,85 @@
 import { useState } from "react";
-import {
-  addSite,
-  scanSite,
-  getLeads,
-  setLeadStatus,
-  trackEvent
-} from "./api.js";
+import { addSite, scanSite, getLeads } from "./api.js";
 
 function App() {
-
-  const [siteId, setSiteId] = useState(null);
   const [url, setUrl] = useState("");
+  const [siteId, setSiteId] = useState(null);
   const [leads, setLeads] = useState([]);
+  const [msg, setMsg] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  async function handleAddSite() {
+  async function onAdd() {
+    setMsg("");
+    setLeads([]);
 
-    const res = await addSite("demo-user", url, "gold");
+    const u = url.trim();
+    if (!u) return setMsg("❌ Type a URL first (example.com)");
 
-    setSiteId(res.site_id);
-
-    trackEvent("site_added", { url });
+    setLoading(true);
+    try {
+      const res = await addSite("demo-user", u, "gold");
+      const id = res.site_id || res.site?.site_id;
+      setSiteId(id);
+      setMsg(`✅ Added site: ${id}`);
+    } catch (e) {
+      setMsg(`❌ Add Site failed: ${e.message}`);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  async function handleScan() {
+  async function onScan() {
+    setMsg("");
+    if (!siteId) return setMsg("❌ Add Site first.");
 
-    await scanSite(siteId);
-
-    const res = await getLeads(siteId);
-
-    setLeads(res.leads || []);
-  }
-
-  async function handleStatus(leadId, status) {
-
-    await setLeadStatus(siteId, leadId, status);
-
-    setLeads(
-      leads.map(l =>
-        l.lead_id === leadId ? { ...l, status } : l
-      )
-    );
+    setLoading(true);
+    try {
+      await scanSite(siteId);
+      const res = await getLeads(siteId);
+      setLeads(res.leads || []);
+      setMsg(`✅ Scan done. Leads: ${(res.leads || []).length}`);
+    } catch (e) {
+      setMsg(`❌ Scan failed: ${e.message}`);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ padding: 20, background: "#000", minHeight: "100vh", color: "#fff" }}>
+      <h1 style={{ marginTop: 0 }}>FIILTHY</h1>
 
-      <h1>FIILTHY</h1>
+      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        <input
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          placeholder="example.com"
+          style={{ padding: 10, width: 280 }}
+        />
 
-      <input
-        value={url}
-        onChange={e => setUrl(e.target.value)}
-        placeholder="Enter URL"
-      />
+        <button onClick={onAdd} style={{ padding: 10 }}>
+          Add Site
+        </button>
 
-      <button onClick={handleAddSite}>
-        Add Site
-      </button>
+        <button onClick={onScan} style={{ padding: 10 }} disabled={!siteId}>
+          Scan
+        </button>
+      </div>
 
-      <button onClick={handleScan}>
-        Scan
-      </button>
+      {loading && <p style={{ marginTop: 10 }}>Loading...</p>}
+      {msg && <p style={{ marginTop: 10 }}>{msg}</p>}
 
-      {leads.map(lead => (
-        <div key={lead.lead_id}>
-
-          <p>{lead.name}</p>
-
-          <button onClick={() =>
-            handleStatus(lead.lead_id, "contacted")
-          }>
-            Contacted
-          </button>
-
-        </div>
-      ))}
-
+      <h2 style={{ marginTop: 18 }}>Leads</h2>
+      {leads.length === 0 ? (
+        <p>No leads yet.</p>
+      ) : (
+        leads.map((lead, i) => (
+          <div key={i} style={{ border: "1px solid #333", padding: 10, marginBottom: 10 }}>
+            <div><b>{lead.type || "lead"}</b></div>
+            <div>{lead.value}</div>
+          </div>
+        ))
+      )}
     </div>
   );
 }
