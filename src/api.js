@@ -1,61 +1,44 @@
-// FIILTHY API — FULL WORKING
-
 const API_BASE = "https://python-3-iy09.onrender.com";
 
 async function api(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      ...(options.headers || {})
     },
     ...options
   });
 
   const text = await res.text();
-
   let data;
   try {
     data = JSON.parse(text);
   } catch {
-    data = { error: text };
+    data = { raw: text };
   }
 
   if (!res.ok) {
-    throw new Error(data.detail || data.error || "API error");
+    throw new Error(data?.detail || data?.raw || `HTTP ${res.status}`);
   }
 
   return data;
 }
 
-export async function addSite(userId, url, plan = "gold") {
-  return await api("/v1/sites", {
+export function addSite(userId, url, plan = "gold") {
+  // YOUR CURRENT BACKEND NEEDS: { url, name }
+  return api("/v1/sites", {
     method: "POST",
     body: JSON.stringify({
-      user_id: userId,
-      url: url,
-      plan: plan
+      url,
+      name: url
     })
   });
 }
 
-export async function scanSite(siteId) {
-  return await api(`/v1/sites/${siteId}/scan`, {
-    method: "POST"
-  });
+export function scanSite(siteId) {
+  return api(`/v1/sites/${siteId}/scan`, { method: "POST" });
 }
 
-export async function getLeads(siteId) {
-  return await api(`/v1/sites/${siteId}/leads`);
-}
-
-export async function setLeadStatus(siteId, leadId, status) {
-  return await api(`/v1/sites/${siteId}/leads/${leadId}/status`, {
-    method: "POST",
-    body: JSON.stringify({
-      status: status
-    })
-  });
-}
-
-export function trackEvent(name, props = {}) {
-  console.log("Event:", name, props);
+export function getLeads(siteId) {
+  return api(`/v1/sites/${siteId}/leads`);
 }
