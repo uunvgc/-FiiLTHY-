@@ -2,7 +2,10 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 async function api(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    },
     ...options
   });
 
@@ -18,19 +21,21 @@ export function addSite(userId, url, plan = "gold") {
 }
 
 export function scanSite(siteId) {
-  return api(`/v1/sites/${siteId}/scan`, {
-    method: "POST"
-  });
+  return api(`/v1/sites/${siteId}/scan`, { method: "POST" });
 }
 
 export function getLeads(siteId) {
   return api(`/v1/sites/${siteId}/leads`);
 }
 
-export function setLeadStatus() {
-  return Promise.resolve();
+export function setLeadStatus(siteId, leadId, status) {
+  return api(`/v1/sites/${siteId}/leads/${leadId}/status`, {
+    method: "POST",
+    body: JSON.stringify({ status })
+  });
 }
 
-export function trackEvent() {
+export function trackEvent(name, props = {}) {
+  console.log("Event:", name, props);
   return Promise.resolve();
 }
