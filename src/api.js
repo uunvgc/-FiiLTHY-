@@ -3,7 +3,8 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
 async function api(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      ...(options.headers || {})
     },
     ...options
   });
@@ -33,13 +34,19 @@ export function getLeads(siteId) {
   return api(`/v1/sites/${siteId}/leads`);
 }
 
-/* REQUIRED EXPORTS — FIXES YOUR BUILD */
-export function setLeadStatus(siteId, leadId, status) {
-  return Promise.resolve({
-    site_id: siteId,
-    lead_id: leadId,
-    status: status
-  });
+export async function setLeadStatus(siteId, leadId, status) {
+  const res = await fetch(
+    `${API_BASE}/v1/sites/${siteId}/leads/${leadId}/status`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ status })
+    }
+  );
+
+  return await res.json();
 }
 
 export function trackEvent(name, props = {}) {
