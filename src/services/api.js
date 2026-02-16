@@ -1,9 +1,13 @@
 import axios from "axios";
 
-// Your backend URL
-const API_URL = "https://python-1-io1k.onrender.com";
+// ============================================
+// FIILTHY BACKEND URL (Render)
+// ============================================
+const API_URL = "https://python-3-iy09.onrender.com";
 
-// Create axios instance
+// ============================================
+// Axios instance
+// ============================================
 const api = axios.create({
   baseURL: API_URL,
   headers: {
@@ -11,22 +15,45 @@ const api = axios.create({
   },
 });
 
-// Health check
-export const getHealth = async () => {
-  const response = await api.get("/api/health");
-  return response.data;
-};
+// ============================================
+// HEALTH CHECK
+// ============================================
+export async function getHealth() {
+  const res = await api.get("/");
+  return res.data;
+}
 
-// Example checkout
-export const createCheckout = async (data) => {
-  const response = await api.post("/api/create-checkout", data);
-  return response.data;
-};
+// ============================================
+// ADD SITE
+// ============================================
+export async function addSite(userId, url, plan = "gold") {
+  const res = await api.post("/v1/sites", {
+    url: url,
+    name: url,
+    user_id: userId,
+    plan: plan,
+  });
 
-// Example lead generation
-export const generateLeads = async (data) => {
-  const response = await api.post("/api/generate-leads", data);
-  return response.data;
-};
+  return res.data;
+}
 
+// ============================================
+// SCAN SITE
+// ============================================
+export async function scanSite(siteId) {
+  const res = await api.post(`/v1/sites/${siteId}/scan`);
+  return res.data;
+}
+
+// ============================================
+// GET LEADS
+// ============================================
+export async function getLeads(siteId) {
+  const res = await api.get(`/v1/sites/${siteId}/leads`);
+  return res.data;
+}
+
+// ============================================
+// EXPORT DEFAULT
+// ============================================
 export default api;
