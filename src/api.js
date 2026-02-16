@@ -42,3 +42,4 @@ export function scanSite(siteId) {
 export function getLeads(siteId) {
   return api(`/v1/sites/${siteId}/leads`);
 }
+
