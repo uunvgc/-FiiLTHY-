@@ -1,0 +1,17 @@
+name: FIILTHY Auto Scan
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # every hour
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend
+        run: curl -s https://python-qvn2.onrender.com/ > /dev/null
+
+      # Example: scan a specific site_id (replace SITE_ID)
+      - name: Scan site
+        run: curl -s -X POST https://python-qvn2.onrender.com/v1/sites/SITE_ID/scan > /dev/null
