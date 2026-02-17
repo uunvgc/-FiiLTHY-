@@ -53,10 +53,6 @@ export default function Dashboard() {
 
     const data = await res.json();
 
-    // YOUR backend returns either:
-    // { leads: [...] }
-    // OR just [...]
-
     const leadList = data.leads || data;
 
     setLeads(leadList);
