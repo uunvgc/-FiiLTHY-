@@ -1,19 +1,25 @@
 import React from "react";
+import { requireSupabase } from "../lib/supabase.js";
+import { useNavigate } from "react-router-dom";
 
-export default function TopBar({ projectId, onRefresh }) {
+export default function TopBar({ title = "FIILTHY", onRefresh }) {
+  const sb = requireSupabase();
+  const nav = useNavigate();
+
   return (
-    <div style={{ padding: "20px 0" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}>
-        <div>
-          <div style={{ fontSize: 28, fontWeight: 800 }}>FIILTHY</div>
-          <div className="muted" style={{ marginTop: 6 }}>
-            Live lead feed • project: <span className="badge">{projectId || "missing"}</span>
-          </div>
-        </div>
-
-        <button className="btn" onClick={onRefresh}>Refresh</button>
+    <div className="topbar">
+      <div>
+        <div className="brand">FIILTHY</div>
+        <div className="muted" style={{ marginTop: 6 }}>{title}</div>
       </div>
-      <hr className="hr" />
+
+      <div className="row">
+        {onRefresh ? <button className="btn" onClick={onRefresh}>Refresh</button> : null}
+        <button className="btn" onClick={() => nav("/dashboard")}>Dashboard</button>
+        <button className="btn" onClick={async () => { await sb.auth.signOut(); nav("/login"); }}>
+          Logout
+        </button>
+      </div>
     </div>
   );
 }
