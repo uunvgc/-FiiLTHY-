@@ -1,4 +1,3 @@
-const projectId = import.meta.env.VITE_FIILTHY_PROJECT_ID?.trim();
 import React, { useEffect, useMemo, useState } from "react";
 import TopBar from "../components/TopBar.jsx";
 import Filters from "../components/Filters.jsx";
@@ -6,7 +5,7 @@ import LeadCard from "../components/LeadCard.jsx";
 import { fetchLeads } from "../lib/api.js";
 
 export default function LeadsPage() {
-  const projectId = import.meta.env.VITE_FIILTHY_PROJECT_ID?.trim();
+  const projectId = (import.meta.env.VITE_FIILTHY_PROJECT_ID || "").trim();
 
   const [status, setStatus] = useState("");
   const [minScore, setMinScore] = useState(0);
@@ -20,23 +19,26 @@ export default function LeadsPage() {
   async function load() {
     try {
       setError("");
+
       if (!projectId) {
         setError("Missing VITE_FIILTHY_PROJECT_ID in env.");
         setLeads([]);
         return;
       }
+
       setLoading(true);
+
       const data = await fetchLeads({
         project_id: projectId,
         status,
         min_score: minScore,
         intent,
-        limit: 200
+        limit: 200,
       });
 
-      // Expect backend returns array
       setLeads(Array.isArray(data) ? data : []);
     } catch (e) {
+      console.error(e);
       setError(e?.message || "Failed to load leads");
       setLeads([]);
     } finally {
@@ -54,16 +56,10 @@ export default function LeadsPage() {
     if (!q) return leads;
 
     return leads.filter((l) => {
-      const hay = [
-        l?.title,
-        l?.content,
-        l?.author,
-        l?.source
-      ]
+      const hay = [l?.title, l?.content, l?.author, l?.source]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
-
       return hay.includes(q);
     });
   }, [leads, query]);
@@ -112,7 +108,6 @@ export default function LeadsPage() {
 
         <div className="grid">
           {filtered.map((lead) => (
-            // ✅ IMPORTANT: stable unique key
             <LeadCard key={lead.id} lead={lead} />
           ))}
         </div>
