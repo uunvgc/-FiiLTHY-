@@ -1,57 +1,36 @@
 import React, { useEffect, useState } from "react";
-import AppShell from "../components/AppShell";
-import { apiFetch } from "../lib/api";
-import { Link } from "react-router-dom";
+import { requireSupabase } from "../lib/supabase.js";
+import { useNavigate } from "react-router-dom";
+import TopBar from "../components/TopBar.jsx";
 
 export default function Dashboard() {
-  const [metrics, setMetrics] = useState(null);
-  const [err, setErr] = useState(null);
+  const sb = requireSupabase();
+  const nav = useNavigate();
+  const [email, setEmail] = useState("");
 
   useEffect(() => {
-    (async () => {
-      try {
-        const m = await apiFetch("/metrics");
-        setMetrics(m);
-      } catch (e) {
-        setErr(e.message || "Metrics unavailable (add /metrics on API)");
-      }
-    })();
-  }, []);
+    sb.auth.getUser().then(({ data }) => setEmail(data?.user?.email || ""));
+  }, [sb]);
 
   return (
-    <AppShell
-      title="Vault Dashboard"
-      subtitle="Totals, status, and last scan."
-      right={<Link className="btn btnGold" to="/leads">Open Leads</Link>}
-    >
-      <div style={{ display: "grid", gap: 12 }}>
-        <div className="row">
-          <span className="badge">API: {import.meta.env.VITE_API_BASE_URL ? "Connected" : "Missing env"}</span>
-          <a className="btn" href={`${import.meta.env.VITE_API_BASE_URL || ""}/health`} target="_blank" rel="noreferrer">
-            API Health ↗
-          </a>
+    <div className="container">
+      <TopBar title="Dashboard" />
+
+      <div className="card">
+        <div className="h2">Welcome</div>
+        <div className="muted" style={{ marginTop: 6 }}>Logged in as: <strong>{email || "—"}</strong></div>
+
+        <div className="row" style={{ marginTop: 16 }}>
+          <button className="btn btn-primary" onClick={() => nav("/leads")}>Open Leads</button>
+          <button className="btn" onClick={async () => { await sb.auth.signOut(); nav("/login"); }}>
+            Logout
+          </button>
         </div>
 
-        <div className="hr" />
-
-        <div className="row">
-          <div>
-            <div style={{ fontWeight: 900 }}>Scanner status</div>
-            <div className="sub">
-              {metrics?.last_scan?.ts ? `Last scan: ${metrics.last_scan.ts}` : (err || "No /metrics yet")}
-            </div>
-          </div>
-        </div>
-
-        <div className="hr" />
-
-        <div className="row">
-          <div className="card" style={{ flex: 1 }}><div className="card-inner"><div className="sub">Total</div><div style={{ fontSize: 28, fontWeight: 900 }}>{metrics?.total ?? "—"}</div></div></div>
-          <div className="card" style={{ flex: 1 }}><div className="card-inner"><div className="sub">New</div><div style={{ fontSize: 28, fontWeight: 900 }}>{metrics?.new ?? "—"}</div></div></div>
-          <div className="card" style={{ flex: 1 }}><div className="card-inner"><div className="sub">Contacted</div><div style={{ fontSize: 28, fontWeight: 900 }}>{metrics?.contacted ?? "—"}</div></div></div>
-          <div className="card" style={{ flex: 1 }}><div className="card-inner"><div className="sub">Qualified</div><div style={{ fontSize: 28, fontWeight: 900 }}>{metrics?.qualified ?? "—"}</div></div></div>
+        <div className="muted" style={{ marginTop: 14 }}>
+          Tip: If leads are empty, check your backend worker + project_id.
         </div>
       </div>
-    </AppShell>
+    </div>
   );
 }
