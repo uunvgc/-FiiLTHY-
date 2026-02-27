@@ -1,23 +1,14 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
-import Landing from "./pages/landing";
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import Leads from "./pages/Leads";
-import Automation from "./pages/Automation";
-import Billing from "./pages/Billing";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import Leads from "./pages/Leads.jsx";
 
 export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/" element={<Navigate to="/leads" replace />} />
         <Route path="/leads" element={<Leads />} />
-        <Route path="/automation" element={<Automation />} />
-        <Route path="/billing" element={<Billing />} />
+        <Route path="*" element={<Navigate to="/leads" replace />} />
       </Routes>
     </Router>
   );
