@@ -19,15 +19,12 @@ export default function LeadsPage() {
   async function load() {
     try {
       setError("");
-
       if (!projectId) {
         setError("Missing VITE_FIILTHY_PROJECT_ID in env.");
         setLeads([]);
         return;
       }
-
       setLoading(true);
-
       const data = await fetchLeads({
         project_id: projectId,
         status,
@@ -35,10 +32,8 @@ export default function LeadsPage() {
         intent,
         limit: 200,
       });
-
       setLeads(Array.isArray(data) ? data : []);
     } catch (e) {
-      console.error(e);
       setError(e?.message || "Failed to load leads");
       setLeads([]);
     } finally {
@@ -54,21 +49,17 @@ export default function LeadsPage() {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return leads;
-
     return leads.filter((l) => {
-      const hay = [l?.title, l?.content, l?.author, l?.source]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
+      const hay = [l?.title, l?.content, l?.author, l?.source].filter(Boolean).join(" ").toLowerCase();
       return hay.includes(q);
     });
   }, [leads, query]);
 
   return (
     <div className="container">
-      <TopBar projectId={projectId} onRefresh={load} />
+      <TopBar title="Leads" onRefresh={load} />
 
-      <div style={{ display: "grid", gap: 12 }}>
+      <div className="stack">
         <Filters
           status={status}
           setStatus={setStatus}
@@ -81,8 +72,8 @@ export default function LeadsPage() {
         />
 
         {error ? (
-          <div className="card" style={{ padding: 16, borderColor: "rgba(255,90,120,0.35)" }}>
-            <div style={{ fontWeight: 800 }}>Error</div>
+          <div className="card card-error">
+            <div className="h2">Error</div>
             <div className="muted" style={{ marginTop: 6 }}>{error}</div>
             <div style={{ marginTop: 12 }}>
               <button className="btn" onClick={load}>Try again</button>
@@ -91,15 +82,15 @@ export default function LeadsPage() {
         ) : null}
 
         {loading ? (
-          <div className="card" style={{ padding: 16 }}>
-            <div style={{ fontWeight: 800 }}>Loading leads…</div>
+          <div className="card">
+            <div className="h2">Loading leads…</div>
             <div className="muted" style={{ marginTop: 6 }}>Pulling from your backend.</div>
           </div>
         ) : null}
 
         {!loading && !error && filtered.length === 0 ? (
-          <div className="card" style={{ padding: 16 }}>
-            <div style={{ fontWeight: 800 }}>No leads found</div>
+          <div className="card">
+            <div className="h2">No leads found</div>
             <div className="muted" style={{ marginTop: 6 }}>
               Either your worker hasn’t inserted leads yet, or your filters are too tight.
             </div>
@@ -108,15 +99,9 @@ export default function LeadsPage() {
 
         <div className="grid">
           {filtered.map((lead) => (
-            <LeadCard key={lead.id} lead={lead} />
+            <LeadCard key={lead.id} lead={lead} projectId={projectId} onChanged={load} />
           ))}
         </div>
-
-        {!loading && !error && filtered.length > 0 ? (
-          <div className="muted" style={{ padding: "8px 0 20px", fontSize: 12 }}>
-            Showing {filtered.length} leads
-          </div>
-        ) : null}
       </div>
     </div>
   );
