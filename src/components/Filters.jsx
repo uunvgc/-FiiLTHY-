@@ -8,13 +8,13 @@ export default function Filters({
   intent,
   setIntent,
   query,
-  setQuery
+  setQuery,
 }) {
   return (
-    <div className="card" style={{ padding: 16 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+    <div className="card">
+      <div className="filters">
         <div>
-          <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>Status</div>
+          <div className="label">Status</div>
           <select value={status} onChange={(e) => setStatus(e.target.value)}>
             <option value="">All</option>
             <option value="new">new</option>
@@ -25,7 +25,7 @@ export default function Filters({
         </div>
 
         <div>
-          <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>Intent</div>
+          <div className="label">Intent</div>
           <select value={intent} onChange={(e) => setIntent(e.target.value)}>
             <option value="">All</option>
             <option value="high">high</option>
@@ -35,7 +35,7 @@ export default function Filters({
         </div>
 
         <div>
-          <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>Min Score</div>
+          <div className="label">Min Score</div>
           <input
             className="input"
             type="number"
@@ -47,7 +47,7 @@ export default function Filters({
         </div>
 
         <div>
-          <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>Search</div>
+          <div className="label">Search</div>
           <input
             className="input"
             placeholder="title / content / author..."
