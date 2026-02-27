@@ -1,0 +1,66 @@
+import React, { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { requireSupabase } from "./lib/supabase.js";
+
+import Login from "./pages/Login.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
+import Leads from "./pages/Leads.jsx";
+
+function RequireAuth({ children }) {
+  const sb = requireSupabase();
+  const [session, setSession] = useState(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    sb.auth.getSession().then(({ data }) => {
+      setSession(data.session || null);
+      setReady(true);
+    });
+
+    const { data: sub } = sb.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession || null);
+      setReady(true);
+    });
+
+    return () => sub?.subscription?.unsubscribe?.();
+  }, [sb]);
+
+  if (!ready) return <div className="container"><div className="card">Loading…</div></div>;
+  if (!session) return <Navigate to="/login" replace />;
+  return children;
+}
+
+export default function App() {
+  // If Supabase env missing, ErrorBoundary will show it.
+  requireSupabase();
+
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+        <Route path="/login" element={<Login />} />
+
+        <Route
+          path="/dashboard"
+          element={
+            <RequireAuth>
+              <Dashboard />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/leads"
+          element={
+            <RequireAuth>
+              <Leads />
+            </RequireAuth>
+          }
+        />
+
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    </Router>
+  );
+}
