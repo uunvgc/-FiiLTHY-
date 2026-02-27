@@ -1,3 +1,4 @@
+const projectId = import.meta.env.VITE_FIILTHY_PROJECT_ID?.trim();
 import React, { useEffect, useMemo, useState } from "react";
 import TopBar from "../components/TopBar.jsx";
 import Filters from "../components/Filters.jsx";
