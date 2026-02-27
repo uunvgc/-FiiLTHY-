@@ -1,60 +1,104 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
 
-@layer base {
-  html {
-    scroll-behavior: smooth;
-  }
-  
-  body {
-    @apply bg-fiilthy-black text-white antialiased;
-    font-family: 'Inter', sans-serif;
-  }
-  
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Playfair Display', serif;
-  }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  background: #0a0a0f;
+  color: #eaeaf2;
 }
 
-@layer components {
-  .gradient-gold {
-    @apply bg-gradient-to-r from-fiilthy-gold via-white to-fiilthy-gold bg-clip-text text-transparent;
-  }
-  
-  .btn-gold {
-    @apply bg-gradient-to-br from-fiilthy-gold to-fiilthy-crown text-black font-bold uppercase tracking-widest 
-           px-8 py-4 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-fiilthy-gold/30;
-  }
-  
-  .btn-platinum {
-    @apply bg-gradient-to-br from-fiilthy-platinum to-gray-400 text-black font-bold uppercase tracking-widest 
-           px-8 py-4 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-fiilthy-platinum/30;
-  }
-  
-  .btn-crown {
-    @apply bg-gradient-to-br from-fiilthy-crown to-yellow-800 text-white font-bold uppercase tracking-widest 
-           px-8 py-4 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-fiilthy-crown/30;
-  }
-  
-  .card-glass {
-    @apply bg-gradient-to-br from-fiilthy-dark to-fiilthy-darker border border-gray-800 rounded-2xl 
-           backdrop-blur-sm transition-all duration-300 hover:border-fiilthy-gold/50;
-  }
-  
-  .card-popular {
-    @apply bg-gradient-to-br from-fiilthy-dark to-fiilthy-darker border-2 border-fiilthy-platinum rounded-2xl 
-           backdrop-blur-sm transform scale-105 shadow-2xl shadow-fiilthy-platinum/10;
-  }
-  
-  .input-field {
-    @apply bg-fiilthy-dark border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500
-           focus:outline-none focus:border-fiilthy-gold focus:ring-1 focus:ring-fiilthy-gold transition-all;
-  }
+.container { width: min(1100px, calc(100% - 32px)); margin: 0 auto; padding: 20px 0; }
+.stack { display: grid; gap: 12px; }
+
+.card {
+  background: rgba(20,20,30,0.72);
+  border: 1px solid rgba(120,120,160,0.18);
+  border-radius: 16px;
+  padding: 16px;
 }
 
-@layer utilities {
-  .text-shadow-gold {
-    text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-  }
+.card-error { border-color: rgba(255,90,120,0.35); }
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
 }
+
+.brand { font-size: 28px; font-weight: 900; letter-spacing: 0.3px; }
+.h1 { font-size: 34px; font-weight: 900; }
+.h2 { font-size: 16px; font-weight: 800; }
+.muted { color: rgba(235,235,255,0.66); }
+.label { font-size: 12px; margin-bottom: 6px; color: rgba(235,235,255,0.66); }
+
+.row { display: flex; align-items: center; gap: 10px; }
+.row.wrap { flex-wrap: wrap; }
+
+.btn {
+  border: 1px solid rgba(200,200,255,0.18);
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.btn:hover { background: rgba(255,255,255,0.1); }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-primary { border-color: rgba(120,255,180,0.4); }
+.btn-link { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+
+.input, select, .textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(200,200,255,0.18);
+  background: rgba(0,0,0,0.25);
+  color: #fff;
+}
+
+.textarea { min-height: 120px; resize: vertical; }
+
+.filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (min-width: 900px) {
+  .filters { grid-template-columns: 1fr 1fr 1fr 1fr; }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+@media (min-width: 900px) {
+  .grid { grid-template-columns: 1fr 1fr; }
+}
+
+.badge {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(200,200,255,0.18);
+  background: rgba(255,255,255,0.06);
+}
+.badge.good { border-color: rgba(120,255,180,0.45); }
+.badge.mid  { border-color: rgba(255,210,80,0.45); }
+.badge.low  { border-color: rgba(255,90,120,0.45); }
+
+.notice, .pill {
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(200,200,255,0.18);
+  background: rgba(255,255,255,0.06);
+}
+
+.pre { margin-top: 10px; background: rgba(0,0,0,0.35); padding: 12px; border-radius: 12px; overflow: auto; }
+.chip { padding: 8px 10px; border-radius: 999px; border: 1px solid rgba(200,200,255,0.18); background: rgba(255,255,255,0.06); color: #fff; cursor: pointer; }
+.chip-on { border-color: rgba(120,255,180,0.45); }
