@@ -1,122 +1,111 @@
-import React, { useEffect, useMemo, useState } from "react";
-import TopBar from "../components/TopBar.jsx";
-import Filters from "../components/Filters.jsx";
-import LeadCard from "../components/LeadCard.jsx";
-import { fetchLeads } from "../lib/api.js";
+import React, { useState } from "react";
+import { requireSupabase } from "../lib/supabase.js";
+import { useNavigate } from "react-router-dom";
 
-export default function LeadsPage() {
-  const projectId = (import.meta.env.VITE_FIILTHY_PROJECT_ID || "").trim();
+export default function Login() {
+  const sb = requireSupabase();
+  const nav = useNavigate();
 
-  const [status, setStatus] = useState("");
-  const [minScore, setMinScore] = useState(0);
-  const [intent, setIntent] = useState("");
-  const [query, setQuery] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
+  const [mode, setMode] = useState("password"); // "password" | "magic"
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [leads, setLeads] = useState([]);
+  const [msg, setMsg] = useState("");
 
-  async function load() {
+  async function signInPassword() {
+    setLoading(true); setMsg("");
     try {
-      setError("");
-
-      if (!projectId) {
-        setError("Missing VITE_FIILTHY_PROJECT_ID in env.");
-        setLeads([]);
-        return;
-      }
-
-      setLoading(true);
-
-      const data = await fetchLeads({
-        project_id: projectId,
-        status,
-        min_score: minScore,
-        intent,
-        limit: 200,
-      });
-
-      setLeads(Array.isArray(data) ? data : []);
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      nav("/dashboard");
     } catch (e) {
-      console.error(e);
-      setError(e?.message || "Failed to load leads");
-      setLeads([]);
+      setMsg(e?.message || "Login failed");
     } finally {
       setLoading(false);
     }
   }
 
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, minScore, intent]);
+  async function signUp() {
+    setLoading(true); setMsg("");
+    try {
+      const { error } = await sb.auth.signUp({ email, password });
+      if (error) throw error;
+      setMsg("Check your email to confirm, then login.");
+    } catch (e) {
+      setMsg(e?.message || "Sign up failed");
+    } finally {
+      setLoading(false);
+    }
+  }
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return leads;
-
-    return leads.filter((l) => {
-      const hay = [l?.title, l?.content, l?.author, l?.source]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      return hay.includes(q);
-    });
-  }, [leads, query]);
+  async function magicLink() {
+    setLoading(true); setMsg("");
+    try {
+      const { error } = await sb.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: window.location.origin + "/dashboard" },
+      });
+      if (error) throw error;
+      setMsg("Magic link sent. Check your email.");
+    } catch (e) {
+      setMsg(e?.message || "Magic link failed");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="container">
-      <TopBar projectId={projectId} onRefresh={load} />
-
-      <div style={{ display: "grid", gap: 12 }}>
-        <Filters
-          status={status}
-          setStatus={setStatus}
-          minScore={minScore}
-          setMinScore={setMinScore}
-          intent={intent}
-          setIntent={setIntent}
-          query={query}
-          setQuery={setQuery}
-        />
-
-        {error ? (
-          <div className="card" style={{ padding: 16, borderColor: "rgba(255,90,120,0.35)" }}>
-            <div style={{ fontWeight: 800 }}>Error</div>
-            <div className="muted" style={{ marginTop: 6 }}>{error}</div>
-            <div style={{ marginTop: 12 }}>
-              <button className="btn" onClick={load}>Try again</button>
-            </div>
-          </div>
-        ) : null}
-
-        {loading ? (
-          <div className="card" style={{ padding: 16 }}>
-            <div style={{ fontWeight: 800 }}>Loading leads…</div>
-            <div className="muted" style={{ marginTop: 6 }}>Pulling from your backend.</div>
-          </div>
-        ) : null}
-
-        {!loading && !error && filtered.length === 0 ? (
-          <div className="card" style={{ padding: 16 }}>
-            <div style={{ fontWeight: 800 }}>No leads found</div>
-            <div className="muted" style={{ marginTop: 6 }}>
-              Either your worker hasn’t inserted leads yet, or your filters are too tight.
-            </div>
-          </div>
-        ) : null}
-
-        <div className="grid">
-          {filtered.map((lead) => (
-            <LeadCard key={lead.id} lead={lead} />
-          ))}
+      <div className="card" style={{ maxWidth: 520, margin: "40px auto" }}>
+        <div className="h1">FIILTHY</div>
+        <div className="muted" style={{ marginTop: 6 }}>
+          Login to view high-intent leads instantly.
         </div>
 
-        {!loading && !error && filtered.length > 0 ? (
-          <div className="muted" style={{ padding: "8px 0 20px", fontSize: 12 }}>
-            Showing {filtered.length} leads
+        <div className="row" style={{ marginTop: 16 }}>
+          <button className={"chip " + (mode === "password" ? "chip-on" : "")} onClick={() => setMode("password")}>
+            Password
+          </button>
+          <button className={"chip " + (mode === "magic" ? "chip-on" : "")} onClick={() => setMode("magic")}>
+            Magic Link
+          </button>
+        </div>
+
+        <div style={{ marginTop: 14 }}>
+          <div className="label">Email</div>
+          <input className="input" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" />
+        </div>
+
+        {mode === "password" ? (
+          <div style={{ marginTop: 12 }}>
+            <div className="label">Password</div>
+            <input className="input" value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="••••••••" />
           </div>
         ) : null}
+
+        {msg ? <div className="notice" style={{ marginTop: 14 }}>{msg}</div> : null}
+
+        <div className="row" style={{ marginTop: 16 }}>
+          {mode === "password" ? (
+            <>
+              <button className="btn btn-primary" disabled={loading} onClick={signInPassword}>
+                {loading ? "Loading…" : "Login"}
+              </button>
+              <button className="btn" disabled={loading} onClick={signUp}>
+                Create account
+              </button>
+            </>
+          ) : (
+            <button className="btn btn-primary" disabled={loading} onClick={magicLink}>
+              {loading ? "Sending…" : "Send magic link"}
+            </button>
+          )}
+        </div>
+
+        <div className="muted" style={{ marginTop: 14, fontSize: 12 }}>
+          If you get “Invalid login”, make sure Supabase Auth is enabled and you created the user.
+        </div>
       </div>
     </div>
   );
