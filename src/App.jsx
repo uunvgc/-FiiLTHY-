@@ -25,7 +25,14 @@ function RequireAuth({ children }) {
     return () => sub?.subscription?.unsubscribe?.();
   }, [sb]);
 
-  if (!ready) return <div className="container"><div className="card">Loading…</div></div>;
+  if (!ready) {
+    return (
+      <div className="container">
+        <div className="card">Loading…</div>
+      </div>
+    );
+  }
+
   if (!session) return <Navigate to="/login" replace />;
   return children;
 }
