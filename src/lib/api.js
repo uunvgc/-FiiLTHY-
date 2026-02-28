@@ -20,13 +20,20 @@ async function request(path, opts = {}) {
 
   const text = await res.text().catch(() => "");
   let json = null;
+
   try {
     json = text ? JSON.parse(text) : null;
-  } catch {}
+  } catch {
+    // non-json response
+  }
 
   if (!res.ok) {
-    throw new Error(json?.error || `Request failed: ${res.status} ${text}`);
+    const msg =
+      (json && (json.error || json.message)) ||
+      (text ? text : `Request failed: ${res.status}`);
+    throw new Error(msg);
   }
+
   return json;
 }
 
