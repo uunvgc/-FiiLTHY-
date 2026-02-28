@@ -1,13 +1,19 @@
 import React, { useMemo, useState } from "react";
 import { aiDraftReply, aiRescore, updateLeadStatus } from "../lib/api.js";
 
-export default function LeadCard({ lead, projectId, onChanged }) {
+export default function LeadCard({ lead, projectId = "", onChanged }) {
   const score = Number(lead?.score ?? 0);
-  const badge = useMemo(() => (score >= 80 ? "badge good" : score >= 50 ? "badge mid" : "badge low"), [score]);
+  const badge = useMemo(() => {
+    if (score >= 80) return "badge good";
+    if (score >= 50) return "badge mid";
+    return "badge low";
+  }, [score]);
 
   const [busy, setBusy] = useState(false);
   const [draft, setDraft] = useState("");
   const [msg, setMsg] = useState("");
+
+  const leadId = lead?.id;
 
   async function copyLink() {
     try {
@@ -21,9 +27,16 @@ export default function LeadCard({ lead, projectId, onChanged }) {
   }
 
   async function setStatus(status) {
-    setBusy(true); setMsg("");
+    if (!leadId) {
+      setMsg("Missing lead id");
+      setTimeout(() => setMsg(""), 1400);
+      return;
+    }
+
+    setBusy(true);
+    setMsg("");
     try {
-      await updateLeadStatus({ lead_id: lead.id, status });
+      await updateLeadStatus({ lead_id: leadId, status });
       setMsg("Saved");
       onChanged?.();
     } catch (e) {
@@ -35,9 +48,21 @@ export default function LeadCard({ lead, projectId, onChanged }) {
   }
 
   async function rescore() {
-    setBusy(true); setMsg("");
+    if (!leadId) {
+      setMsg("Missing lead id");
+      setTimeout(() => setMsg(""), 1400);
+      return;
+    }
+    if (!projectId) {
+      setMsg("Missing projectId");
+      setTimeout(() => setMsg(""), 1400);
+      return;
+    }
+
+    setBusy(true);
+    setMsg("");
     try {
-      const out = await aiRescore({ lead_id: lead.id, project_id: projectId });
+      const out = await aiRescore({ lead_id: leadId, project_id: projectId });
       setMsg(out?.message || "Rescored");
       onChanged?.();
     } catch (e) {
@@ -48,9 +73,21 @@ export default function LeadCard({ lead, projectId, onChanged }) {
   }
 
   async function draftReply() {
-    setBusy(true); setMsg("");
+    if (!leadId) {
+      setMsg("Missing lead id");
+      setTimeout(() => setMsg(""), 1400);
+      return;
+    }
+    if (!projectId) {
+      setMsg("Missing projectId");
+      setTimeout(() => setMsg(""), 1400);
+      return;
+    }
+
+    setBusy(true);
+    setMsg("");
     try {
-      const out = await aiDraftReply({ lead_id: lead.id, project_id: projectId });
+      const out = await aiDraftReply({ lead_id: leadId, project_id: projectId });
       setDraft(out?.draft || out?.text || "");
       setMsg("Draft ready");
     } catch (e) {
@@ -60,15 +97,21 @@ export default function LeadCard({ lead, projectId, onChanged }) {
     }
   }
 
+  const content = lead?.content ? String(lead.content) : "";
+  const contentPreview =
+    content.length > 300 ? content.slice(0, 300) + "…" : (content || "(no content)");
+
   return (
     <div className="card">
       <div className="row">
-        <div className="h2" style={{ margin: 0 }}>{lead?.title || "(no title)"}</div>
+        <div className="h2" style={{ margin: 0 }}>
+          {lead?.title || "(no title)"}
+        </div>
         <div className={badge}>{score}</div>
       </div>
 
       <div className="muted" style={{ marginTop: 8 }}>
-        {lead?.content ? String(lead.content).slice(0, 300) + (String(lead.content).length > 300 ? "…" : "") : "(no content)"}
+        {contentPreview}
       </div>
 
       <div className="row" style={{ marginTop: 12 }}>
@@ -80,17 +123,29 @@ export default function LeadCard({ lead, projectId, onChanged }) {
               Open
             </a>
           ) : null}
-          <button className="btn" onClick={copyLink} disabled={!lead?.permalink}>Copy link</button>
+          <button className="btn" onClick={copyLink} disabled={!lead?.permalink}>
+            Copy link
+          </button>
         </div>
       </div>
 
       <div className="row" style={{ marginTop: 12, flexWrap: "wrap" }}>
-        <button className="btn" disabled={busy} onClick={() => setStatus("contacted")}>Mark Contacted</button>
-        <button className="btn" disabled={busy} onClick={() => setStatus("ignored")}>Ignore</button>
-        <button className="btn" disabled={busy} onClick={() => setStatus("won")}>Won</button>
+        <button className="btn" disabled={busy} onClick={() => setStatus("contacted")}>
+          Mark Contacted
+        </button>
+        <button className="btn" disabled={busy} onClick={() => setStatus("ignored")}>
+          Ignore
+        </button>
+        <button className="btn" disabled={busy} onClick={() => setStatus("won")}>
+          Won
+        </button>
 
-        <button className="btn btn-primary" disabled={busy} onClick={draftReply}>AI Draft Reply</button>
-        <button className="btn" disabled={busy} onClick={rescore}>AI Rescore</button>
+        <button className="btn btn-primary" disabled={busy} onClick={draftReply}>
+          AI Draft Reply
+        </button>
+        <button className="btn" disabled={busy} onClick={rescore}>
+          AI Rescore
+        </button>
 
         {msg ? <span className="pill">{msg}</span> : null}
       </div>
@@ -100,10 +155,19 @@ export default function LeadCard({ lead, projectId, onChanged }) {
           <div className="label">AI Draft</div>
           <textarea className="textarea" value={draft} onChange={(e) => setDraft(e.target.value)} />
           <div className="row" style={{ marginTop: 10 }}>
-            <button className="btn" onClick={async () => { await navigator.clipboard.writeText(draft); setMsg("Draft copied"); setTimeout(() => setMsg(""), 1200); }}>
+            <button
+              className="btn"
+              onClick={async () => {
+                await navigator.clipboard.writeText(draft);
+                setMsg("Draft copied");
+                setTimeout(() => setMsg(""), 1200);
+              }}
+            >
               Copy draft
             </button>
-            <button className="btn" onClick={() => setDraft("")}>Clear</button>
+            <button className="btn" onClick={() => setDraft("")}>
+              Clear
+            </button>
           </div>
         </div>
       ) : null}
