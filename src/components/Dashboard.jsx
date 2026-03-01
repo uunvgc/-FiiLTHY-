@@ -1,3 +1,4 @@
+   
 import Topbar from "../components/Topbar";
 import { useMemo, useState } from "react";
 
@@ -54,7 +55,6 @@ export default function Dashboard() {
         }),
       });
 
-      // backend returns: { success: true, site_id: "...", site: {...} }
       const newId = data?.site_id || data?.site?.id;
       if (!newId) throw new Error("No site_id returned from server.");
 
@@ -112,8 +112,10 @@ export default function Dashboard() {
 
   return (
     <div style={{ padding: 20, fontFamily: "system-ui, Arial", maxWidth: 900 }}>
-      <h1 style={{ margin: 0 }}>FIILTHY</h1>
-      <p style={{ opacity: 0.8, marginTop: 6 }}>
+      <Topbar />
+
+      <h1 style={{ marginTop: 20 }}>FIILTHY</h1>
+      <p style={{ opacity: 0.8 }}>
         Backend: <code>{API_BASE}</code>
       </p>
 
@@ -130,6 +132,7 @@ export default function Dashboard() {
             border: "1px solid #ccc",
           }}
         />
+
         <button
           onClick={handleAddSite}
           disabled={!canAdd}
@@ -173,29 +176,26 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {siteId ? (
+      {siteId && (
         <p style={{ marginTop: 10 }}>
           Current <b>site_id</b>: <code>{siteId}</code>
         </p>
-      ) : null}
+      )}
 
-      {status ? (
+      {status && (
         <div style={{ marginTop: 12, padding: 10, borderRadius: 8, background: "#eef" }}>
           {status}
         </div>
-      ) : null}
+      )}
 
-      {error ? (
+      {error && (
         <div style={{ marginTop: 12, padding: 10, borderRadius: 8, background: "#fee", color: "#900" }}>
           <b>Error:</b> {error}
-          <div style={{ marginTop: 6, fontSize: 13, opacity: 0.85 }}>
-            If you see “Site not found”, it means Render restarted and memory cleared — just hit Add Site again.
-          </div>
         </div>
-      ) : null}
+      )}
 
       <div style={{ marginTop: 16 }}>
-        <h2 style={{ marginBottom: 8 }}>Leads</h2>
+        <h2>Leads</h2>
 
         {leads.length === 0 ? (
           <div style={{ opacity: 0.8 }}>
@@ -214,14 +214,14 @@ export default function Dashboard() {
                 }}
               >
                 <div style={{ fontWeight: 700 }}>{l.type || "lead"}</div>
-                <div style={{ marginTop: 6, fontSize: 16 }}>
+                <div style={{ marginTop: 6 }}>
                   <code>{l.value}</code>
                 </div>
-                {l.source_url ? (
+                {l.source_url && (
                   <div style={{ marginTop: 8, fontSize: 13, opacity: 0.8 }}>
                     Source: {l.source_url}
                   </div>
-                ) : null}
+                )}
               </div>
             ))}
           </div>
