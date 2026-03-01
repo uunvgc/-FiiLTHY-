@@ -1,67 +1,86 @@
+/* ================================
+   CONFIG
+================================ */
+
 const BASE = (
   import.meta.env.VITE_BACKEND_URL ||
   import.meta.env.VITE_API_BASE ||
   ""
 ).trim();
 
-function mustBase() {
-  if (!BASE) {
-    throw new Error("Missing VITE_BACKEND_URL (or VITE_API_BASE)");
-  }
-  return BASE;
+if (!BASE) {
+  throw new Error("Missing VITE_BACKEND_URL (or VITE_API_BASE)");
 }
 
-async function request(path, opts = {}) {
+const DEFAULT_TIMEOUT = 15000; // 15 seconds
+const USE_COOKIES = true; // set to false if using JWT instead
+
+
+/* ================================
+   CORE REQUEST WRAPPER
+================================ */
+
+async function request(path, options = {}) {
+  const {
+    method = "GET",
+    body,
+    headers = {},
+    timeout = DEFAULT_TIMEOUT
+  } = options;
+
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
+  const timer = setTimeout(() => controller.abort(), timeout);
 
   try {
-    const res = await fetch(`${mustBase()}${path}`, {
+    const res = await fetch(`${BASE}${path}`, {
+      method,
       signal: controller.signal,
-      credentials: "include", // remove if you don't use cookies
+      credentials: USE_COOKIES ? "include" : "same-origin",
       headers: {
-        ...(opts.body ? { "Content-Type": "application/json" } : {}),
-        ...(opts.headers || {})
+        ...(body ? { "Content-Type": "application/json" } : {}),
+        ...headers
       },
-      ...opts
+      ...(body ? { body } : {})
     });
 
-    const text = await res.text().catch(() => "");
-    let json = null;
+    const raw = await res.text().catch(() => "");
+    let data = null;
 
     try {
-      json = text ? JSON.parse(text) : null;
+      data = raw ? JSON.parse(raw) : null;
     } catch {
-      // non-JSON response
+      data = raw || null;
     }
 
     if (!res.ok) {
-      const msg =
-        (json && (json.error || json.message)) ||
-        (text ? text : `Request failed: ${res.status}`);
-      throw new Error(msg);
+      const message =
+        (data && (data.error || data.message)) ||
+        raw ||
+        `Request failed with status ${res.status}`;
+      throw new Error(message);
     }
 
-    return json;
+    return data;
   } catch (err) {
     if (err.name === "AbortError") {
       throw new Error("Request timed out");
     }
     throw err;
   } finally {
-    clearTimeout(timeout);
+    clearTimeout(timer);
   }
 }
 
-/* =========================
-   LEADS
-========================= */
+
+/* ================================
+   LEADS API
+================================ */
 
 export async function fetchLeads({
   project_id,
-  status = "",
+  status,
   min_score,
-  intent = "",
+  intent,
   limit = 200
 }) {
   if (!project_id) {
@@ -77,9 +96,7 @@ export async function fetchLeads({
     params.set("min_score", String(min_score));
   if (intent) params.set("intent", intent);
 
-  return request(`/leads?${params.toString()}`, {
-    method: "GET"
-  });
+  return request(`/leads?${params.toString()}`);
 }
 
 export async function updateLeadStatus({ lead_id, status }) {
@@ -92,9 +109,10 @@ export async function updateLeadStatus({ lead_id, status }) {
   });
 }
 
-/* =========================
-   AI
-========================= */
+
+/* ================================
+   AI API
+================================ */
 
 export async function aiDraftReply({ lead_id, project_id }) {
   if (!lead_id || !project_id) {
