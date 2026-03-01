@@ -1,6 +1,4 @@
-/* ================================
-   CONFIG
-================================ */
+import { supabase } from "./supabase";
 
 const BASE = (
   import.meta.env.VITE_BACKEND_URL ||
@@ -12,13 +10,11 @@ if (!BASE) {
   throw new Error("Missing VITE_BACKEND_URL (or VITE_API_BASE)");
 }
 
-const DEFAULT_TIMEOUT = 15000; // 15 seconds
-const USE_COOKIES = true; // set to false if using JWT instead
+const DEFAULT_TIMEOUT = 15000;
 
-
-/* ================================
-   CORE REQUEST WRAPPER
-================================ */
+/* =========================
+   CORE REQUEST
+========================= */
 
 async function request(path, options = {}) {
   const {
@@ -32,12 +28,19 @@ async function request(path, options = {}) {
   const timer = setTimeout(() => controller.abort(), timeout);
 
   try {
+    // 🔐 Get Supabase session token
+    const {
+      data: { session }
+    } = await supabase.auth.getSession();
+
+    const token = session?.access_token;
+
     const res = await fetch(`${BASE}${path}`, {
       method,
       signal: controller.signal,
-      credentials: USE_COOKIES ? "include" : "same-origin",
       headers: {
         ...(body ? { "Content-Type": "application/json" } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...headers
       },
       ...(body ? { body } : {})
@@ -56,7 +59,7 @@ async function request(path, options = {}) {
       const message =
         (data && (data.error || data.message)) ||
         raw ||
-        `Request failed with status ${res.status}`;
+        `Request failed (${res.status})`;
       throw new Error(message);
     }
 
@@ -71,10 +74,9 @@ async function request(path, options = {}) {
   }
 }
 
-
-/* ================================
-   LEADS API
-================================ */
+/* =========================
+   LEADS
+========================= */
 
 export async function fetchLeads({
   project_id,
@@ -109,10 +111,9 @@ export async function updateLeadStatus({ lead_id, status }) {
   });
 }
 
-
-/* ================================
-   AI API
-================================ */
+/* =========================
+   AI
+========================= */
 
 export async function aiDraftReply({ lead_id, project_id }) {
   if (!lead_id || !project_id) {
