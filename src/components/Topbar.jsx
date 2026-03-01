@@ -23,3 +23,4 @@ export default function TopBar({ title = "FIILTHY", onRefresh }) {
     </div>
   );
 }
+
